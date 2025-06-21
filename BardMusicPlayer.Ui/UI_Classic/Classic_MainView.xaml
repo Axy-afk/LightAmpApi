@@ -1,0 +1,261 @@
+﻿<UserControl x:Class="BardMusicPlayer.Ui.Classic.Classic_MainView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:control = "clr-namespace:BardMusicPlayer.Ui.Controls"
+             xmlns:Locale ="clr-namespace:BardMusicPlayer.Ui.Locales"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             Width="Auto" Height="Auto" Loaded="Window_Loaded"
+             Background="WhiteSmoke">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/LightAmp;component/Resources/ImageButtonStyle.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="80"/>
+                <RowDefinition Height="25"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200*"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="300*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Playlist -->
+            <Grid x:Name="PlaylistGrid" Grid.Row="0" Grid.Column="0" Background="WhiteSmoke" Visibility="Visible">
+                <control:Playlist x:Name="PlaylistCtl" Background="WhiteSmoke"/>
+            </Grid>
+
+            <!-- History -->
+            <Grid x:Name="HistoryGrid" Grid.Row="0" Grid.Column="0" Background="WhiteSmoke" Visibility="Hidden">
+                <control:PlayedHistory x:Name="PlayedHistoryCtl"/>
+            </Grid>
+
+            <!-- Combobox for Chat, Settings and so on -->
+            <Grid Grid.Row="0" Grid.Column="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="278*"/>
+                    <ColumnDefinition Width="275*"/>
+                </Grid.ColumnDefinitions>
+                <TabControl Grid.ColumnSpan="2">
+                    <TabItem Header="[Chat] All">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="18"/>
+                            </Grid.RowDefinitions>
+                            <RichTextBox x:Name="ChatBox" Grid.Row="0" IsReadOnly="False" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.IsDeferredScrollingEnabled="True" Background="Gray">
+                                <RichTextBox.Style>
+                                    <Style TargetType="RichTextBox">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Cursor" Value="Arrow" />
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="False">
+                                                <Setter Property="Cursor" Value="Arrow" />
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </RichTextBox.Style>
+                            </RichTextBox>
+                            <TextBox x:Name="ChatInputText" Grid.Row="1" Height="18" PreviewKeyDown="ChatInputText_KeyDown"/>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Performers">
+                        <Grid Background="WhiteSmoke">
+                            <control:BardView x:Name="BardsList"/>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Settings">
+                        <Grid Background="WhiteSmoke">
+                            <control:Settings x:Name="SettingsControl"/>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Statistics" >
+                        <Grid Background="WhiteSmoke">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="25"/>
+                                <RowDefinition Height="25"/>
+                                <RowDefinition Height="25"/>
+                                <RowDefinition Height="25"/>
+                                <RowDefinition Height="25"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="25"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="30*"/>
+                                <ColumnDefinition Width="60*"/>
+                            </Grid.ColumnDefinitions>
+<!--
+                            <Label Grid.Row="1" Grid.Column="0" Content="Beats per minute" />
+                            <Label Grid.Row="1" Grid.Column="1" x:Name="Statistics_BPM_Label" />
+-->
+                            <Label Grid.Row="1" Grid.Column="0" Content="Total tracks" />
+                            <Label Grid.Row="1" Grid.Column="1" x:Name="Statistics_Total_Tracks_Label" />
+
+                            <Label Grid.Row="2" Grid.Column="0" Content="Total note count" />
+                            <Label Grid.Row="2" Grid.Column="1" x:Name="Statistics_Total_Note_Count_Label" />
+
+                            <Label Grid.Row="3" Grid.Column="0" Content="Track note count" />
+                            <Label Grid.Row="3" Grid.Column="1" x:Name="Statistics_Track_Note_Count_Label" />
+
+                            <Label Grid.Row="6" Grid.Column="0" Content="Song functions:" />
+                            <Grid Grid.Row="6" Grid.Column="1">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Button Grid.Row="0" Content="Export current song as Midi"  Click="ExportAsMidi"    ToolTip="{x:Static Locale:Language.Statistics_Export_Song}"/>
+                                <Button Grid.Row="1" Content="Quick-Edit" Click="QuickMidiProcessing_Click"         ToolTip="{x:Static Locale:Language.Misc_QEdit}"/>
+                                <Button Grid.Row="2" Content="Open Midi with Fus edit" Click="MidiProcessing_Click" />
+                            </Grid>
+                            
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Song Preview">
+                        <Grid Background="WhiteSmoke">
+                            <control:SirenPreview x:Name="SirenPreview"/>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="SongBrowser">
+                        <Grid Background="WhiteSmoke">
+                            <control:SongBrowser x:Name="SongBrowser"/>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </Grid>
+
+            <!-- Track Row-->
+            <Grid Grid.Row="1" Grid.ColumnSpan="3" Height="25" VerticalAlignment="Top" Margin="10,10,5,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="25"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="60"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" x:Name="Rewind" Content="⏪" Click="Rewind_Click" Margin="2,0,3,0" ToolTip="{x:Static Locale:Language.Main_Rewind}"/>
+                <TextBox Grid.Column="1" x:Name="SongName" PreviewMouseDown="SongName_PreviewMouseDown" Height="25" TextWrapping="Wrap" Text="Song Name" FontSize="16" TextAlignment="Center" VerticalAlignment="Center" UseLayoutRounding="True" Margin="3,0,5,0"/>
+                <!-- Track Selection-->
+                <Grid Grid.Column="2" HorizontalAlignment="Left" Width="38">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" x:Name="track_txtNum" x:FieldModifier="private" Text="t1"  KeyDown="track_txtNum_KeyDownHandler" TextAlignment="Center" FontSize="14" HorizontalAlignment="Right" Width="28" Height="25" VerticalAlignment="Top" />
+                    <Grid Grid.Column="1" Margin="0,0,-7,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="12"/>
+                            <RowDefinition Height="12"/>
+                        </Grid.RowDefinitions>
+                        <Button Grid.Row="0" x:Name="track_cmdUp"   FontSize="8" HorizontalAlignment="Left" VerticalAlignment="Top" FontFamily="Segoe MDL2 Assets" Content="&#xE70E;" Click="track_cmdUp_Click"   Width="12" TextOptions.TextHintingMode="Fixed" />
+                        <Button Grid.Row="1" x:Name="track_cmdDown" FontSize="8" HorizontalAlignment="Left" VerticalAlignment="Top" FontFamily="Segoe MDL2 Assets" Content="&#xE70D;" Click="track_cmdDown_Click" Width="12" TextOptions.TextHintingMode="Fixed"/>
+                    </Grid>
+                </Grid>
+                <!-- End Track Selection-->
+                <Button Grid.Column="4" Content="All tracks" x:Name="all_tracks_button" Click="all_tracks_button_Click" HorizontalAlignment="Right" Width="60" FontSize="12" ToolTip="{x:Static Locale:Language.Main_All_Tracks}"/>
+            </Grid>
+            <!-- Playbar Row -->
+            <Grid Grid.Row="2" Grid.ColumnSpan="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="25"/>
+                    <RowDefinition Height="25"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="40"/>
+                </Grid.ColumnDefinitions>
+                <Grid Grid.Row="0" Grid.ColumnSpan="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="40"/>
+                        <ColumnDefinition Width="5"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="5"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0" FontSize="10" Content="Performing"/>
+
+                    <!-- Octave Selection-->
+                    <Grid Grid.Column="1" HorizontalAlignment="Left" Width="38">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" x:Name="octave_txtNum" x:FieldModifier="private" Text="ø0" TextChanged="octave_txtNum_TextChanged" TextAlignment="Center" FontSize="14" HorizontalAlignment="Right" Width="28" Height="25" VerticalAlignment="Top" />
+                        <Grid Grid.Column="1" Margin="0,0,-7,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="12"/>
+                                <RowDefinition Height="12"/>
+                            </Grid.RowDefinitions>
+                            <Button Grid.Row="0" x:Name="octave_cmdUp"   FontSize="8" HorizontalAlignment="Left" VerticalAlignment="Top" FontFamily="Segoe MDL2 Assets" Content="&#xE70E;" Click="octave_cmdUp_Click"   Width="12" TextOptions.TextHintingMode="Fixed" />
+                            <Button Grid.Row="1" x:Name="octave_cmdDown" FontSize="8" HorizontalAlignment="Left" VerticalAlignment="Top" FontFamily="Segoe MDL2 Assets" Content="&#xE70D;" Click="octave_cmdDown_Click" Width="12" TextOptions.TextHintingMode="Fixed"/>
+                        </Grid>
+                    </Grid>
+                    <!-- Speed Selection-->
+                    <Grid Grid.Column="3" HorizontalAlignment="Left" Width="Auto">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" x:Name="speed_txtNum" x:FieldModifier="private" Text="100%" TextChanged="speed_txtNum_TextChanged" TextAlignment="Justify" HorizontalAlignment="Stretch" Width="48" Height="25" VerticalAlignment="Stretch" FontSize="14" ToolTip="{x:Static Locale:Language.Main_Playback_Speed}"/>
+                        <Grid Grid.Column="1" Margin="0,0,-7,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="12"/>
+                                <RowDefinition Height="12"/>
+                            </Grid.RowDefinitions>
+                            <Button Grid.Row="0" x:Name="speed_cmdUp"   FontSize="8" HorizontalAlignment="Left" VerticalAlignment="Top" FontFamily="Segoe MDL2 Assets" Content="&#xE70E;" Click="speed_cmdUp_Click"   Width="12" TextOptions.TextHintingMode="Fixed" />
+                            <Button Grid.Row="1" x:Name="speed_cmdDown" FontSize="8" HorizontalAlignment="Left" VerticalAlignment="Top" FontFamily="Segoe MDL2 Assets" Content="&#xE70D;" Click="speed_cmdDown_Click" Width="12" TextOptions.TextHintingMode="Fixed"/>
+                        </Grid>
+                    </Grid>
+                </Grid>
+                
+                <Label Grid.Row="1" Grid.Column="0" x:Name="ElapsedTime" Content="00:00" Height="25" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                <Slider Grid.Row="1" Grid.Column="1" x:Name="Playbar_Slider" Height="25" ValueChanged="Playbar_Slider_ValueChanged" Thumb.DragStarted="Playbar_Slider_DragStarted" Thumb.DragCompleted="Playbar_Slider_DragCompleted" VerticalAlignment="Center" UseLayoutRounding="True" />
+                <Label  Grid.Row="1" Grid.Column="2" x:Name="TotalTime" Content="00:00" HorizontalAlignment="Right" Width="44" Height="25"  />
+            </Grid>
+
+            <!-- heatmap -->
+            <Grid Grid.Row="3" Grid.ColumnSpan="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="100"/>
+                </Grid.ColumnDefinitions>
+                <control:KeyboardHeatMap x:Name="KeyHeat" Grid.Column="1" Height="Auto" Width="Auto"/>
+            </Grid>
+
+
+            <!-- Playcontrol Row-->
+            <Grid Grid.Row="3" Grid.Column="3" HorizontalAlignment="Right" Margin="0,0,10,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="20"/>
+                    <RowDefinition Height="25"/>
+                </Grid.RowDefinitions>
+                <!-- Controls -->
+                <Button Grid.Row="0" x:Name="Play_Button" Content="▶" FontSize="26" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="75" Click="Play_Button_Click" PreviewMouseRightButtonDown="Play_Button_MouseRightButtonDown"  ToolTip="{x:Static Locale:Language.Main_Play}"/>
+                <Button Grid.Row="1" x:Name="Script_Button" Content="Scripts" HorizontalAlignment="Left"  VerticalAlignment="Top" Width="75" Click="Script_Button_Click" ToolTip="{x:Static Locale:Language.Main_Script}"/>
+                <Button Grid.Row="2" x:Name="Info_Button" Content="Info" HorizontalAlignment="Left" VerticalAlignment="Top" Width="75" Click="Info_Button_Click" />
+            </Grid>
+            <!-- Instrumentinfo Row -->
+            <Grid Grid.Row="4" Grid.Column="0">
+                <Label x:Name="InstrumentInfo" Content="None" />
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>
