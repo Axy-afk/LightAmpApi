@@ -33,8 +33,8 @@ namespace BardMusicPlayer.Ui.Controls
         public EventHandler<bool> OnSetPlaybuttonState;
         public EventHandler<BmpSong> OnLoadSongFromPlaylistToPreview;
         public EventHandler<bool> OnHeaderLabelDoubleClick;
-
-        public Playlist()
+    public static Playlist Instance { get; private set; }
+    public Playlist()
         {
             InitializeComponent();
 
@@ -44,7 +44,8 @@ namespace BardMusicPlayer.Ui.Controls
             PlaylistContainer.ItemsSource = BmpCoffer.Instance.GetPlaylistNames();
             Playlist_Header.Header = "Playlists";
             AutoPlay_CheckBox.IsChecked = BmpPigeonhole.Instance.PlaylistAutoPlay;
-        }
+        Instance = this;
+    }
 
         /// <summary>
         /// Plays the next song from the playlist
@@ -125,7 +126,7 @@ namespace BardMusicPlayer.Ui.Controls
                     return;
 
                 currentPlaylist = PlaylistFunctions.CreatePlaylist(inputbox.ResponseText);
-                refreshPlaylistSongsAndTimes();
+                RefreshPlaylistSongsAndTimes();
                 showingPlaylists = false;
             }
         }
@@ -143,7 +144,7 @@ namespace BardMusicPlayer.Ui.Controls
             if (!PlaylistFunctions.AddFilesToPlaylist(currentPlaylist))
                 return;
 
-            refreshPlaylistSongsAndTimes();
+            RefreshPlaylistSongsAndTimes();
         }
 
         public void AddSongToPlaylist(string filename)
@@ -152,7 +153,7 @@ namespace BardMusicPlayer.Ui.Controls
                 return;
 
             if (PlaylistFunctions.AddFilesToPlaylist(currentPlaylist, filename))
-                refreshPlaylistSongsAndTimes();
+                RefreshPlaylistSongsAndTimes();
 
             return;
         }
@@ -172,7 +173,7 @@ namespace BardMusicPlayer.Ui.Controls
 
             importInProgress = true;
             if (await PlaylistFunctions.AddFolderToPlaylist(currentPlaylist))
-                refreshPlaylistSongsAndTimes();
+                RefreshPlaylistSongsAndTimes();
             importInProgress = false;
         }
 
@@ -199,7 +200,7 @@ namespace BardMusicPlayer.Ui.Controls
             }
             BmpCoffer.Instance.SavePlaylist(currentPlaylist);
 
-            refreshPlaylistSongsAndTimes();
+            RefreshPlaylistSongsAndTimes();
         }
 
         /// <summary>
@@ -260,7 +261,7 @@ namespace BardMusicPlayer.Ui.Controls
                     return;
                 currentPlaylist = BmpCoffer.Instance.GetPlaylist(name);
                 showingPlaylists = false;
-                refreshPlaylistSongsAndTimes();
+                RefreshPlaylistSongsAndTimes();
                 return;
             }
             else
@@ -656,7 +657,7 @@ namespace BardMusicPlayer.Ui.Controls
         }
 
         #region common routines
-        private void refreshPlaylistSongsAndTimes()
+        public void RefreshPlaylistSongsAndTimes()
         {
             PlaylistContainer.ItemsSource = PlaylistFunctions.GetCurrentPlaylistItems(currentPlaylist, true);
             Playlist_Header.Header = currentPlaylist.GetName().PadRight(75 - currentPlaylist.GetName().Length, ' ') + new DateTime(PlaylistFunctions.GetTotalTime(currentPlaylist).Ticks).ToString("HH:mm:ss");

@@ -1,6 +1,7 @@
 ﻿using BardMusicPlayer.Coffer;
 using BardMusicPlayer.Transmogrify.Song;
 using BardMusicPlayer.Ui.Classic;
+using BardMusicPlayer.Ui.Controls;
 using BardMusicPlayer.Ui.Functions;
 using System;
 using System.Net;
@@ -75,6 +76,9 @@ namespace BardMusicPlayer.Ui
                 BmpCoffer.Instance.SaveSong(song);
                 targetPlaylist.Add(idx, song);
                 BmpCoffer.Instance.SavePlaylist(targetPlaylist);
+                Classic_MainView.Instance.Dispatcher.BeginInvoke(
+                    new Action(() => Classic_MainView.Instance.SongBrowser.OnAddSongFromBrowser?.Invoke(Playlist.Instance.Refr, decodedId))
+                );
             }
             catch (Exception ex)
             {
