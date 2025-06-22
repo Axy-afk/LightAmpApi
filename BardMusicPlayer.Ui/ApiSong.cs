@@ -16,7 +16,7 @@ namespace BardMusicPlayer.Ui
             return new ApiSong
             {
                 Title = bmpSong.Title,
-                Id = bmpSong.Id.ToString(),
+                Id =  bmpSong.Id != null ? bmpSong.Id.ToString() : "",
                 Duration = bmpSong.Duration,
             };
         }
