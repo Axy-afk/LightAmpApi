@@ -275,9 +275,9 @@ namespace BardMusicPlayer.Ui.Controls
                 }
             }
         }
-        public void SelectSong(short pid)
+        public void SelectSong(string id)
         {
-            OnLoadSongFromPlaylist?.Invoke(this, PlaylistFunctions.GetSongFromPlaylist(currentPlaylist, pid));
+            OnLoadSongFromPlaylist?.Invoke(this, PlaylistFunctions.GetSongFromPlaylistById(currentPlaylist, id));
         }
         /// <summary>
         /// if a song or playlist in the list was doubleclicked
