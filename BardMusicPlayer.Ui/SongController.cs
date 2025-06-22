@@ -14,7 +14,7 @@ namespace BardMusicPlayer.Ui
             return ApiSong.Create(PlaybackFunctions.CurrentSong);
         }
         [HttpPatch]
-        public void Patch(short id)
+        public void Patch(string id)
         {
             Classic_MainView.Instance.Dispatcher.BeginInvoke(new Action(() => Classic_MainView.Instance.PlaylistCtl.SelectSong(id)));
         }

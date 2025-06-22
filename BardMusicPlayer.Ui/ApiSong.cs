@@ -7,7 +7,7 @@ namespace BardMusicPlayer.Ui
     public class ApiSong
     {
         public string Title { get; set; }
-        public short Pid { get; set; }
+        public string Id { get; set; }
         public TimeSpan Duration { get; set; } = default;
         public static ApiSong Create(BmpSong bmpSong)
         {
@@ -16,8 +16,8 @@ namespace BardMusicPlayer.Ui
             return new ApiSong
             {
                 Title = bmpSong.Title,
+                Id = bmpSong.Id.ToString(),
                 Duration = bmpSong.Duration,
-                Pid = bmpSong.Id != null ? bmpSong.Id.Pid : (short)-1 // or any other placeholder/default
             };
         }
     }

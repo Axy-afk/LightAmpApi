@@ -135,15 +135,15 @@ namespace BardMusicPlayer.Ui.Functions
         /// Get a song fromt the playlist
         /// </summary>
         /// <param name="playlist"></param>
-        /// <param name="songname"></param>
-        public static BmpSong GetSongFromPlaylist(IPlaylist playlist, string songname)
+        /// <param name="id"></param>
+        public static BmpSong GetSongFromPlaylist(IPlaylist playlist, string id)
         {
-            return playlist?.FirstOrDefault(item => item.Title == songname);
+            return playlist?.FirstOrDefault(item => item.Title == id);
         }
 
-        public static BmpSong GetSongFromPlaylist(IPlaylist playlist, short pid)
+        public static BmpSong GetSongFromPlaylistById(IPlaylist playlist, string pid)
         {
-            return playlist?.FirstOrDefault(item => item.Id.Pid == pid);
+            return playlist?.FirstOrDefault(item => item.Id.ToString() == pid);
         }
 
         /// <summary>
