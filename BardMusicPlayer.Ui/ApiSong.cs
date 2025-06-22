@@ -12,11 +12,12 @@ namespace BardMusicPlayer.Ui
         public static ApiSong Create(BmpSong bmpSong)
         {
             if (bmpSong == null) return null;
+
             return new ApiSong
             {
-                Pid = bmpSong.Id.Pid,
+                Title = bmpSong.Title,
                 Duration = bmpSong.Duration,
-                Title = bmpSong.Title
+                Pid = bmpSong.Id != null ? bmpSong.Id.Pid : (short)-1 // or any other placeholder/default
             };
         }
     }

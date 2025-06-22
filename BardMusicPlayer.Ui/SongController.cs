@@ -2,6 +2,7 @@
 using BardMusicPlayer.Ui.Functions;
 using System;
 using System.Web.Http;
+using System.Net;
 
 namespace BardMusicPlayer.Ui
 {
@@ -18,9 +19,12 @@ namespace BardMusicPlayer.Ui
             Classic_MainView.Instance.Dispatcher.BeginInvoke(new Action(() => Classic_MainView.Instance.PlaylistCtl.SelectSong(id)));
         }
         [HttpPut]
-        public void Put(string id)
+        public void Put([FromUri] string id)
         {
-            Classic_MainView.Instance.Dispatcher.BeginInvoke(new Action(() => Classic_MainView.Instance.PlaylistCtl.AddSongToPlaylist(id)));
+            string decodedId = WebUtility.UrlDecode(id);
+            Classic_MainView.Instance.Dispatcher.BeginInvoke(
+                new Action(() => Classic_MainView.Instance.PlaylistCtl.AddSongToPlaylist(decodedId))
+            );
         }
         //[HttpPut]
         //public void Put(string id)
