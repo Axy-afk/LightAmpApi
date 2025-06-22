@@ -19,11 +19,11 @@ namespace BardMusicPlayer.Ui
             Classic_MainView.Instance.Dispatcher.BeginInvoke(new Action(() => Classic_MainView.Instance.PlaylistCtl.SelectSong(id)));
         }
         [HttpPut]
-        public void Put([FromUri] string id)
+        public void Put(string id)
         {
             string decodedId = WebUtility.UrlDecode(id);
             Classic_MainView.Instance.Dispatcher.BeginInvoke(
-                new Action(() => Classic_MainView.Instance.PlaylistCtl.AddSongToPlaylist(decodedId))
+                new Action(() => Classic_MainView.Instance.SongBrowser.OnAddSongFromBrowser?.Invoke(Classic_MainView.Instance.SongBrowser, decodedId))
             );
         }
         //[HttpPut]

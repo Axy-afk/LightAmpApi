@@ -23,7 +23,7 @@ namespace BardMusicPlayer.Ui
     /// </summary>
     public sealed partial class App : Application
     {
-        string baseAddress = "http://localhost:9000/";
+        string baseAddress = "http://localhost:9001/";
         IDisposable webApp;
         protected override void OnStartup(StartupEventArgs e)
         {
