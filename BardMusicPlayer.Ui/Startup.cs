@@ -17,6 +17,7 @@ namespace BardMusicPlayer.Ui
         public void Configuration(IAppBuilder app)
         {
             var config = new HttpConfiguration();
+            config.MapHttpAttributeRoutes(); // Add this line at the top of Configuration()
             config.Routes.MapHttpRoute(
                  name: "DefaultApi",
                  routeTemplate: "{controller}/{id}",
