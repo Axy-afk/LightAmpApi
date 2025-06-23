@@ -6,6 +6,7 @@
 using BardMusicPlayer.Coffer;
 using BardMusicPlayer.Transmogrify.Song;
 using BardMusicPlayer.Ui.Resources;
+using LiteDB;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -26,7 +27,7 @@ namespace BardMusicPlayer.Ui.Functions
         /// <param name="currentPlaylist"></param>
         /// <param name="filename"></param>
         /// <returns>true if success</returns>
-        public static bool AddFilesToPlaylist(IPlaylist currentPlaylist, string filename)
+        public static bool AddFilesToPlaylist(IPlaylist currentPlaylist, string filename, out ObjectId id)
         {
             var song = BmpSong.OpenFile(filename).Result;
             {
@@ -44,15 +45,27 @@ namespace BardMusicPlayer.Ui.Functions
                 BmpCoffer.Instance.SaveSong(song);
             }
             BmpCoffer.Instance.SavePlaylist(currentPlaylist);
+            id = song.Id;
             return true;
         }
+    public static bool AddFilesToPlaylistPosition(IPlaylist currentPlaylist, string filename, int idx, out ObjectId id) {
+      var song = BmpSong.OpenFile(filename).Result;
+      {
+        if (currentPlaylist.SingleOrDefault(x => x.Title.Equals(song.Title)) == null)
+          currentPlaylist.Add(idx, song);
+        BmpCoffer.Instance.SaveSong(song);
+      }
+      BmpCoffer.Instance.SavePlaylist(currentPlaylist);
+      id = song.Id;
+      return true;
+    }
 
-        /// <summary>
-        /// Add file(s) to the playlist
-        /// </summary>
-        /// <param name="currentPlaylist"></param>
-        /// <returns>true if success</returns>
-        public static bool AddFilesToPlaylist(IPlaylist currentPlaylist)
+    /// <summary>
+    /// Add file(s) to the playlist
+    /// </summary>
+    /// <param name="currentPlaylist"></param>
+    /// <returns>true if success</returns>
+    public static bool AddFilesToPlaylist(IPlaylist currentPlaylist)
         {
             var openFileDialog = new OpenFileDialog
             {
@@ -64,7 +77,7 @@ namespace BardMusicPlayer.Ui.Functions
                 return false;
 
             foreach (string song in openFileDialog.FileNames)
-                AddFilesToPlaylist(currentPlaylist, song);
+                AddFilesToPlaylist(currentPlaylist, song, out _);
             return true;
         }
 

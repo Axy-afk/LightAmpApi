@@ -20,14 +20,20 @@ namespace BardMusicPlayer.Ui
         [HttpPatch]
         public void Patch(string id)
         {
-            Classic_MainView.Instance.Dispatcher.BeginInvoke(new Action(() => Classic_MainView.Instance.PlaylistCtl.SelectSong(id)));
+            Classic_MainView.Instance.Dispatcher.BeginInvoke(new Action(() => Classic_MainView.Instance.PlaylistCtl.SelectSongById(id)));
         }
         [HttpPut]
         public void Put(string id)
         {
             string decodedId = WebUtility.UrlDecode(id);
-            Classic_MainView.Instance.Dispatcher.BeginInvoke(
-                new Action(() => Classic_MainView.Instance.SongBrowser.OnAddSongFromBrowser?.Invoke(Classic_MainView.Instance.SongBrowser, decodedId))
+            Classic_MainView.Instance.Dispatcher.Invoke(
+                new Action(() => {
+                  var currentSong = PlaybackFunctions.CurrentSong;
+                  Classic_MainView.Instance.PlaylistCtl.AddSongToPlaylistAndQueuee(id, currentSong, out var objectId);
+                  if (currentSong == null && id != null) {
+                    Classic_MainView.Instance.PlaylistCtl.SelectSongById(objectId.ToString());
+                  }
+                })
             );
         }
         [HttpPut]

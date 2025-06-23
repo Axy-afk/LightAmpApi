@@ -4,10 +4,12 @@
  */
 
 using BardMusicPlayer.Coffer;
+using BardMusicPlayer.MidiUtil.Utils;
 using BardMusicPlayer.Pigeonhole;
 using BardMusicPlayer.Transmogrify.Song;
 using BardMusicPlayer.Ui.Functions;
 using BardMusicPlayer.Ui.Windows;
+using LiteDB;
 using Microsoft.Win32;
 using System;
 using System.Linq;
@@ -146,13 +148,28 @@ namespace BardMusicPlayer.Ui.Controls
 
             RefreshPlaylistSongsAndTimes();
         }
+    public void AddSongToPlaylistAndQueuee(string filename, BmpSong currectSong, out ObjectId id) {
+      id = null;
+      if (currentPlaylist == null)
+        return;
+      var idx = currectSong == null ? -1 : currentPlaylist.IndexOf(currectSong);
+      if (idx ==  -1) {
+        if (PlaylistFunctions.AddFilesToPlaylist(currentPlaylist, filename, out id))
+          RefreshPlaylistSongsAndTimes();
+        return;
+      }
+      if (PlaylistFunctions.AddFilesToPlaylistPosition(currentPlaylist, filename, idx + 1, out id)) {
+        RefreshPlaylistSongsAndTimes();
+      }
 
-        public void AddSongToPlaylist(string filename)
+      return;
+    }
+    public void AddSongToPlaylist(string filename)
         {
             if (currentPlaylist == null)
                 return;
 
-            if (PlaylistFunctions.AddFilesToPlaylist(currentPlaylist, filename))
+            if (PlaylistFunctions.AddFilesToPlaylist(currentPlaylist, filename, out _))
                 RefreshPlaylistSongsAndTimes();
 
             return;
@@ -276,7 +293,7 @@ namespace BardMusicPlayer.Ui.Controls
                 }
             }
         }
-        public void SelectSong(string id)
+        public void SelectSongById(string id)
         {
             OnLoadSongFromPlaylist?.Invoke(this, PlaylistFunctions.GetSongFromPlaylistById(currentPlaylist, id));
         }
