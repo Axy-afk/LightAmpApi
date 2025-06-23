@@ -7,6 +7,7 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Results;
 
 namespace BardMusicPlayer.Ui
 {
@@ -23,18 +24,23 @@ namespace BardMusicPlayer.Ui
             Classic_MainView.Instance.Dispatcher.BeginInvoke(new Action(() => Classic_MainView.Instance.PlaylistCtl.SelectSongById(id)));
         }
         [HttpPut]
-        public void Put(string id)
+        public IHttpActionResult Put(string id)
         {
+          lock (Classic_MainView.Instance) {
             string decodedId = WebUtility.UrlDecode(id);
+            bool found = false;
             Classic_MainView.Instance.Dispatcher.Invoke(
                 new Action(() => {
                   var currentSong = PlaybackFunctions.CurrentSong;
-                  Classic_MainView.Instance.PlaylistCtl.AddSongToPlaylistAndQueuee(id, currentSong, out var objectId);
-                  if (currentSong == null && id != null) {
+                  Classic_MainView.Instance.PlaylistCtl.AddSongToPlaylistAndQueuee(id, currentSong, out LiteDB.ObjectId objectId);
+                  found = objectId != null;
+                  if (currentSong == null && objectId != null) {
                     Classic_MainView.Instance.PlaylistCtl.SelectSongById(objectId.ToString());
                   }
                 })
             );
+            return found ? Ok() : BadRequest();
+          }
         }
         [HttpPut]
         [Route("song/load")]
