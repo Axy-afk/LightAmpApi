@@ -24,7 +24,7 @@ namespace BardMusicPlayer.Ui
             Classic_MainView.Instance.Dispatcher.BeginInvoke(new Action(() => Classic_MainView.Instance.PlaylistCtl.SelectSongById(id)));
         }
         [HttpPut]
-        public IHttpActionResult Put(string id)
+        public IHttpActionResult Put([FromUri] string id)
         {
           lock (Classic_MainView.Instance) {
             string decodedId = WebUtility.UrlDecode(id);
