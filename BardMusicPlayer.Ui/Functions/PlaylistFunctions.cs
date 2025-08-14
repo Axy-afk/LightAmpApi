@@ -4,9 +4,9 @@
  */
 
 using BardMusicPlayer.Coffer;
+using BardMusicPlayer.Coffer.Interfaces;
 using BardMusicPlayer.Transmogrify.Song;
 using BardMusicPlayer.Ui.Resources;
-using LiteDB;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;

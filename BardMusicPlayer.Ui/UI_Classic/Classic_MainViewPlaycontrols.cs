@@ -29,6 +29,7 @@ namespace BardMusicPlayer.Ui.Classic
         {
             Play_Button.Content = !playing ? @"▶" : @"⏸";
         }
+
         /* Playback */
         private void Play_Button_Click(object sender, RoutedEventArgs e)
         {

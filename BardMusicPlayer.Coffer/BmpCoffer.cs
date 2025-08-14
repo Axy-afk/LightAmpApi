@@ -3,10 +3,6 @@
  * Licensed under the GPL v3 license. See https://github.com/GiR-Zippo/LightAmp/blob/main/LICENSE for full license information.
  */
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using BardMusicPlayer.Coffer.DatabaseFunctions;
 using BardMusicPlayer.Coffer.Interfaces;
 using BardMusicPlayer.Coffer.Legacy;
@@ -15,6 +11,10 @@ using BardMusicPlayer.Transmogrify.Song;
 using LiteDB;
 using Melanchall.DryWetMidi.Core;
 using Melanchall.DryWetMidi.Interaction;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace BardMusicPlayer.Coffer
 {

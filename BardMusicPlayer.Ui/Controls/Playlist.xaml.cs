@@ -699,7 +699,7 @@ namespace BardMusicPlayer.Ui.Controls
         }
 
         #region common routines
-        public void refreshPlaylistSongsAndTimes()
+        private void refreshPlaylistSongsAndTimes()
         {
             PlaylistContainer.ItemsSource = PlaylistFunctions.GetCurrentPlaylistItems(currentPlaylist, true);
             Playlist_Header.Header = currentPlaylist.GetName().PadRight(75 - currentPlaylist.GetName().Length, ' ') + new DateTime(PlaylistFunctions.GetTotalTime(currentPlaylist).Ticks).ToString("HH:mm:ss");
