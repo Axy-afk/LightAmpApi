@@ -43,6 +43,7 @@ namespace BardMusicPlayer.Ui
 
             var rng = new Random();
             var shuffledSongs = playlist.OrderBy(_ => rng.Next()).ToList(); // Convert to List for shuffling
+         
             foreach (var song in shuffledSongs)
             {
                 playlist.Remove(song); // Remove songs from the original playlist
@@ -53,7 +54,9 @@ namespace BardMusicPlayer.Ui
             }
 
             BmpCoffer.Instance.SavePlaylist(playlist); // Save the shuffled playlist
-
+            if (id == Classic_MainView.Instance.PlaylistCtl.GetCurrentPlaylistName())
+                Classic_MainView.Instance.Dispatcher.BeginInvoke(new Action(() => Classic_MainView.Instance.PlaylistCtl.SetCurrentPlayList(playlist)));
+   
             return Ok($"Playlist '{id}' was shuffled and replaced.");
         }
 
@@ -71,6 +74,7 @@ namespace BardMusicPlayer.Ui
             {
                 newPlaylist.Add(song);
             }
+   
             BmpCoffer.Instance.SavePlaylist(newPlaylist);
             return Ok($"Playlist '{src}' was copied to '{dest}'.");
         }

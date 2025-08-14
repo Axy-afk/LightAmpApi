@@ -175,6 +175,21 @@ namespace BardMusicPlayer.Ui.Controls
             return;
         }
 
+        public string GetCurrentPlaylistName()
+        {
+            if (currentPlaylist == null)
+                return null;
+            return currentPlaylist.GetName();
+        }
+
+        public void SetCurrentPlayList(IPlaylist pls)
+        {            
+            if (currentPlaylist == null)
+                return;
+            
+            currentPlaylist = pls;
+            RefreshPlaylistSongsAndTimes();
+        }
         /// <summary>
         /// Add file(s) to the selected playlist
         /// </summary>

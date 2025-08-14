@@ -88,9 +88,8 @@ namespace BardMusicPlayer.Ui
                 BmpCoffer.Instance.SaveSong(song);
                 targetPlaylist.Add(idx, song);
                 BmpCoffer.Instance.SavePlaylist(targetPlaylist);
-                Classic_MainView.Instance.Dispatcher.Invoke(
-                    new Action(() => Playlist.Instance.RefreshPlaylistSongsAndTimes())
-                );
+                if(playlist == Classic_MainView.Instance.PlaylistCtl.GetCurrentPlaylistName())
+                    Classic_MainView.Instance.Dispatcher.BeginInvoke(new Action(() => Classic_MainView.Instance.PlaylistCtl.SetCurrentPlayList(targetPlaylist)));
             }
             catch (Exception ex)
             {
