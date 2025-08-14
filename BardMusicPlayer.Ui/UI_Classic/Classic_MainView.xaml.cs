@@ -29,7 +29,6 @@ namespace BardMusicPlayer.Ui.Classic
         private int MaxTracks = 1;
         private bool _directLoaded { get; set; } = false; //indicates if a song was loaded directly or from playlist
         private bool _showPlaylistGrid { get; set; } = true; //indicates if we showing the playlists or history
-        public static Classic_MainView Instance { get; private set; }
         //private NetworkPlayWindow _networkWindow = null;
         public Classic_MainView()
         {
@@ -59,11 +58,14 @@ namespace BardMusicPlayer.Ui.Classic
             SongBrowser.OnAddSongFromBrowser            += Instance_SongBrowserAddSongToPlaylist;
             SongBrowser.OnLoadSongFromBrowserToPreview  += Instance_SongBrowserLoadSongToPreview;
 
+            XIVBrowser.OnLoadSongFromBrowser            += Instance_BMLBrowserLoadedSong;
+            XIVBrowser.OnAddSongFromBrowser             += Instance_BMLBrowserAddSongToPlaylist;
+            XIVBrowser.OnLoadSongFromBrowserToPreview   += Instance_BMLBrowserLoadSongToPreview;
+
             BmpSeer.Instance.MidibardPlaylistEvent      += Instance_MidibardPlaylistEvent;
 
             Globals.Globals.OnConfigReload              += Globals_OnConfigReload;
             SettingsControl.LoadConfig();
-            Instance = this;
         }
 
         private void Globals_OnConfigReload(object sender, EventArgs e)
@@ -211,6 +213,39 @@ namespace BardMusicPlayer.Ui.Classic
             SirenPreview.SirenLoadSong(BmpSong.OpenFile(filename).Result);
         }
 
+        /// <summary>
+        /// triggered by the BMLBrowser if a song should be loaded
+        /// </summary>
+        private void Instance_BMLBrowserLoadedSong(object sender, BmpSong song)
+        {
+            //Inform the PlayedHistory
+            if (BmpPigeonhole.Instance.EnableSongHistory)
+                PlayedHistory.SongHistory.Add(song);
+
+            PlaybackFunctions.LoadSongFromPlaylist(song);
+            InstrumentInfo.Content = PlaybackFunctions.GetInstrumentNameForHostPlayer();
+            _directLoaded = true;
+        }
+
+        /// <summary>
+        /// triggered by the BMLBrowser if a song should be added to the playlist
+        /// </summary>
+        private void Instance_BMLBrowserAddSongToPlaylist(object sender, BmpSong song)
+        {
+            PlaylistCtl.AddSongToPlaylist(song);
+        }
+
+        /// <summary>
+        /// Triggered by the BMLBrowser when a song should be previewed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="song"></param>
+        private void Instance_BMLBrowserLoadSongToPreview(object sender, BmpSong song)
+        {
+            SirenPreview.SirenLoadSong(song);
+        }
+
+
         private void Instance_MidibardPlaylistEvent(Seer.Events.MidibardPlaylistEvent seerEvent)
         {
             this.Dispatcher.BeginInvoke(new Action(() => PlaylistCtl.SelectSongByIndex(seerEvent.Song)));
@@ -301,21 +336,6 @@ namespace BardMusicPlayer.Ui.Classic
             {
                 BmpChatParser.AppendText(ChatBox, ev);
                 this.ChatBox.ScrollToEnd();
-            }
-
-            if (ev.ChatLogCode == "0039")
-            {
-                if (ev.ChatLogLine.Contains(@"Anzählen beginnt") ||
-                    ev.ChatLogLine.Contains("The count-in will now commence.") ||
-                    ev.ChatLogLine.Contains("orchestre est pr"))
-                {
-                    if (BmpPigeonhole.Instance.AutostartMethod != (int)Globals.Globals.Autostart_Types.VIA_CHAT)
-                        return;
-                    if (PlaybackFunctions.PlaybackState == PlaybackFunctions.PlaybackState_Enum.PLAYBACK_STATE_PLAYING)
-                        return;
-                    PlaybackFunctions.PlaySong(3000);
-                    Play_Button_State(true);
-                }
             }
         }
         #endregion
@@ -495,6 +515,32 @@ namespace BardMusicPlayer.Ui.Classic
                 PlaylistGrid.Visibility = Visibility.Hidden;
                 HistoryGrid.Visibility = Visibility.Visible;
             }
+        }
+
+        private void SongBrowser_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Tab)
+                return;
+
+            if (!SongBrowserGrid.IsMouseOver)
+                return;
+
+
+            e.Handled = true;
+
+            if (SongBrowser.Visibility == Visibility.Hidden)
+            {
+                XIVBrowser.Visibility = Visibility.Hidden;
+                SongBrowser.Visibility = Visibility.Visible;
+                SongBrowser.SongPath.Focus();
+            }
+            else
+            {
+                XIVBrowser.Visibility = Visibility.Visible;
+                XIVBrowser.RefreshButton.Focus();
+                SongBrowser.Visibility = Visibility.Hidden;
+            }
+            
         }
     }
 }

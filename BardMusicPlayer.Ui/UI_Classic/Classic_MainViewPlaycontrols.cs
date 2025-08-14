@@ -29,26 +29,18 @@ namespace BardMusicPlayer.Ui.Classic
         {
             Play_Button.Content = !playing ? @"▶" : @"⏸";
         }
-        public void Play()
-        {
-            PlaybackFunctions.PlaySong(0);
-            Play_Button_State(true);
-        }
-        public void Pause()
-        {
-            PlaybackFunctions.PauseSong();
-            Play_Button_State(false);
-        }
         /* Playback */
         private void Play_Button_Click(object sender, RoutedEventArgs e)
         {
             if (PlaybackFunctions.PlaybackState == PlaybackFunctions.PlaybackState_Enum.PLAYBACK_STATE_PLAYING)
             {
-                Pause();
+                PlaybackFunctions.PauseSong();
+                Play_Button_State(false);
             }
             else
             {
-                Play();
+                PlaybackFunctions.PlaySong(0);
+                Play_Button_State(true);
             }
         }
 

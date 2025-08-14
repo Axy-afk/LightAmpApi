@@ -56,13 +56,20 @@
                 </Menu.ItemsPanel>
                 <MenuItem Header="------- Options ------" IsEnabled="False"/>
                 <CheckBox x:Name="AlignToFirstNote_CheckBox" Content="Align to first note" IsChecked="True" Checked="AlignToFirstNote_CheckBox_Checked" Unchecked="AlignToFirstNote_CheckBox_Checked" ToolTip="{x:Static Locale:Language.QEdit_Align_Zero}"/>
-                <CheckBox x:Name="AlignProgramChanges_CheckBox" Content="Align Guitar Switches" IsChecked="True"/>
+                <CheckBox x:Name="AlignProgramChanges_CheckBox" Content="Align Guitar Switch" IsChecked="True"/>
                 <Label Content="Guitar-Mode" IsEnabled="False"/>
                 <ComboBox x:Name="GuitarModeSelector" SelectionChanged ="GuitarModeSelector_Selected" Width="120" ToolTip="{x:Static Locale:Language.QEdit_GuitarMode}" >
                     <ComboBoxItem Content="None"/>
                     <ComboBoxItem Content="Standard"/>
                     <ComboBoxItem Content="Simple"/>
                     <ComboBoxItem Content="Override By Track"/>
+                </ComboBox>
+                <Label Content="Clean Stacked Notes" IsEnabled="False"/>
+                <ComboBox x:Name="AntiStackedNotes" SelectedIndex="0" Width="120" ToolTip="{x:Static Locale:Language.QEdit_AntiStack}" >
+                    <ComboBoxItem Content="None"/>
+                    <ComboBoxItem Content="Keep First"/>
+                    <ComboBoxItem Content="Keep Shortest"/>
+                    <ComboBoxItem Content="Keep Longest"/>
                 </ComboBox>
                 <Label Content="Song-Speed" IsEnabled="False"/>
                 <control:NumericUpDown Grid.Column="1" x:Name="SongSpeed_Percent" PreviewMouseUp="SongSpeed_Percent_PreviewMouseUp" Value="100"/>
@@ -88,6 +95,21 @@
                     <MenuItem Header="DrumMap Track"        Click="TrackListItem_DrumMap_Click"/>
                     <MenuItem Header="Pitch/Bend to notes"  Click="PitchConvert_Click"/>
                     <MenuItem Header="Duplicate Track"      Click="TrackListItem_Duplicate_Click"/>
+                    <MenuItem Header="Arpeggiate Chords">
+                        <MenuItem Header="Do Arp Up" Click="TrackListItems_Arpeggiate_Up_Click"/>
+                        <MenuItem Header="Do Arp Down" Click="TrackListItems_Arpeggiate_Down_Click"/>
+                        <MenuItem Header="Spacing">
+                            <MenuItem Header="64th" IsCheckable="True" x:Name="Arp64" Checked="ArpCheck_Checked" StaysOpenOnClick="True"/>
+                            <MenuItem Header="32th" IsCheckable="True" x:Name="Arp32" Checked="ArpCheck_Checked" StaysOpenOnClick="True"/>
+                            <MenuItem Header="16th" IsCheckable="True" x:Name="Arp16" Checked="ArpCheck_Checked" StaysOpenOnClick="True"/>
+                            <MenuItem Header="8th"  IsCheckable="True" x:Name="Arp8" Checked="ArpCheck_Checked" StaysOpenOnClick="True"/>
+                            <MenuItem Header="4th"  IsCheckable="True" x:Name="Arp4" Checked="ArpCheck_Checked" StaysOpenOnClick="True"/>
+                            <MenuItem Header="2th"  IsCheckable="True" x:Name="Arp2" Checked="ArpCheck_Checked" StaysOpenOnClick="True"/>
+                            <MenuItem Header="Full"  IsCheckable="True" x:Name="Arp1" Checked="ArpCheck_Checked" StaysOpenOnClick="True"/>
+                        </MenuItem>
+                        <MenuItem Header="Chord Jitter ticks" IsEnabled="False"/>
+                        <TextBox x:Name="ArpJitter" Text="000"/>
+                    </MenuItem>
                     <MenuItem Header="Quantize">
                         <MenuItem Header="Off"  IsCheckable="True" x:Name="Quant0" Checked="QuantCheck_Checked" Unchecked="QuantCheck_UnChecked"/>
                         <MenuItem Header="64th" IsCheckable="True" x:Name="Quant64" Checked="QuantCheck_Checked" Unchecked="QuantCheck_UnChecked"/>
@@ -96,7 +118,7 @@
                         <MenuItem Header="8th"  IsCheckable="True" x:Name="Quant8" Checked="QuantCheck_Checked" Unchecked="QuantCheck_UnChecked"/>
                         <MenuItem Header="4th"  IsCheckable="True" x:Name="Quant4" Checked="QuantCheck_Checked" Unchecked="QuantCheck_UnChecked"/>
                     </MenuItem>
-
+                    <MenuItem Header="Remove Same Notes" Click="TrackListItems_RemoveSameNotes_Click"/>
                     <MenuItem Header="Delete Track" Click="TrackListItem_Delete_Click"/>
                 </ContextMenu>
             </ListView.ContextMenu>

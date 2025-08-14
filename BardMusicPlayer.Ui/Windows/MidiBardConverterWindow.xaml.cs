@@ -67,6 +67,7 @@ namespace BardMusicPlayer.Ui.Windows
         MidiFile _midifile { get; set; } = null;
         bool _AlignMidiToFirstNote { get; set; } = false;
         object _Sender { get; set; } = null;
+        int ArpSpacing { get; set; } = 16;
 
         NumericUpDown currentNumericControl { get; set; } = null;
 
@@ -426,6 +427,11 @@ namespace BardMusicPlayer.Ui.Windows
             return true;
         }
 
+
+        /// <summary>
+        /// Prepares the MIDI for export
+        /// </summary>
+        /// <returns></returns>
         private MemoryStream PrepareMidi()
         {
             List<MidiBardImporter.MidiTrack> tracks = CloneTracks();
@@ -445,15 +451,18 @@ namespace BardMusicPlayer.Ui.Windows
                                 });
                 }
             }
-            
+
             MemoryStream myStream = new MemoryStream();
             MidiFile outputMidi = MidiBardImporter.Convert(_midifile.Clone(), tracks).Result;
 
-            if ((bool)AlignProgramChanges_CheckBox.IsChecked)
-                outputMidi = RealignProgrmChanges(outputMidi);
+            if (AntiStackedNotes.SelectedIndex > 0)
+                outputMidi = RemoveStackedNotes(outputMidi, AntiStackedNotes.SelectedIndex);
 
             if (_AlignMidiToFirstNote)
                 outputMidi = RealignMidiFile(outputMidi);
+
+            if ((bool)AlignProgramChanges_CheckBox.IsChecked)
+                outputMidi = RealignProgrmChanges(outputMidi);
 
             if(Convert.ToInt16(SongSpeed_Percent.Value) != 100)
             {
@@ -598,6 +607,20 @@ namespace BardMusicPlayer.Ui.Windows
         private void AlignToFirstNote_CheckBox_Checked(object sender, RoutedEventArgs e)
         {
             _AlignMidiToFirstNote = (bool)AlignToFirstNote_CheckBox.IsChecked;
+        }
+
+        private void SongSpeed_Percent_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (currentNumericControl == null)
+            {
+                currentNumericControl = sender as NumericUpDown;
+                currentNumericControl.OnValueChanged += SongSpeed_Percent_OnValueChanged;
+            }
+        }
+
+        private void SongSpeed_Percent_OnValueChanged(object sender, int s)
+        {
+            SongSpeed_Percent.Value = s.ToString();
         }
 
         private void VoiceMap_Click(object sender, RoutedEventArgs e)
@@ -746,6 +769,83 @@ namespace BardMusicPlayer.Ui.Windows
 
         private void QuantCheck_UnChecked(object sender, RoutedEventArgs e)
         {
+        }
+
+        private void TrackListItems_RemoveSameNotes_Click(object sender, RoutedEventArgs e)
+        {
+            var f = TrackList.SelectedItems;
+            if (f.Count != 2)
+            {
+                MessageBox.Show("Please select only two tracks", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            RemoveSameNotes(((MidiBardImporter.MidiTrack)f[0]).trackChunk, ((MidiBardImporter.MidiTrack)f[1]).trackChunk);
+
+        }
+
+        private void TrackListItems_Arpeggiate_Up_Click(object sender, RoutedEventArgs e)
+        {
+            var f = TrackList.SelectedItems;
+            if (f.Count != 1)
+            {
+                MessageBox.Show("Please select a track", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            Arpeggiate(((MidiBardImporter.MidiTrack)f[0]).trackChunk, ArpSpacing, Convert.ToInt32(ArpJitter.Text), true);
+        }
+
+        private void TrackListItems_Arpeggiate_Down_Click(object sender, RoutedEventArgs e)
+        {
+            var f = TrackList.SelectedItems;
+            if (f.Count != 1)
+            {
+                MessageBox.Show("Please select a track", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+            Arpeggiate(((MidiBardImporter.MidiTrack)f[0]).trackChunk, ArpSpacing, Convert.ToInt32(ArpJitter.Text), false);
+        }
+
+        private void ArpCheck_Checked(object sender, RoutedEventArgs e)
+        {
+            MenuItem[] array = new MenuItem[] { Arp64, Arp32, Arp16, Arp8, Arp4, Arp2, Arp1 };
+
+            //get/reset the checked items
+            if (e.Source is MenuItem)
+            {
+                var x = e.Source as MenuItem;
+                foreach (MenuItem p in array)
+                {
+                    if (p.Name == x.Name)
+                        continue;
+                    p.IsChecked = false;
+                }
+
+                switch (x.Name)
+                {
+                    case "Arp64":
+                        ArpSpacing = 64;
+                        break;
+                    case "Arp32":
+                        ArpSpacing = 32;
+                        break;
+                    case "Arp16":
+                        ArpSpacing = 16;
+                        break;
+                    case "Arp8":
+                        ArpSpacing = 8;
+                        break;
+                    case "Arp4":
+                        ArpSpacing = 4;
+                        break;
+                    case "Arp2":
+                        ArpSpacing = 2;
+                        break;
+                    case "Arp1":
+                        ArpSpacing = 1;
+                        break;
+                }
+            }
+
         }
 
         private void TrackListItem_Delete_Click(object sender, RoutedEventArgs e)
@@ -928,7 +1028,6 @@ namespace BardMusicPlayer.Ui.Windows
             return Task.FromResult(originalChunk);
         }
 
-
         private struct PitchData
         {
             public int Pitch;
@@ -1009,18 +1108,233 @@ namespace BardMusicPlayer.Ui.Windows
             }
         }
 
-        private void SongSpeed_Percent_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+        /// <summary>
+        /// Removes stacked notes
+        /// Types:
+        /// 0 - do nothing
+        /// 1 - FIFO
+        /// 2 - Keep short
+        /// 3 - Keep long
+        /// </summary>
+        /// <param name="outputMidi"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        private MidiFile RemoveStackedNotes(MidiFile outputMidi, int type)
         {
-            if (currentNumericControl == null)
+            if (type == 0)
+                return outputMidi;
+
+            Parallel.ForEach(outputMidi.GetTrackChunks().Where(static x => x.GetNotes().Any()), (originalChunk) =>
             {
-                currentNumericControl = sender as NumericUpDown;
-                currentNumericControl.OnValueChanged += SongSpeed_Percent_OnValueChanged;
-            }
+                Dictionary<KeyValuePair<long, SevenBitNumber>, Note> notes = new Dictionary<KeyValuePair<long, SevenBitNumber>, Note>();
+                Note cnote = new Note((SevenBitNumber)0);
+                foreach (Note note in originalChunk.GetNotes())
+                {
+                    if (type == 1)
+                    {
+                        if (!notes.ContainsKey(new KeyValuePair<long, SevenBitNumber>(note.Time, note.NoteNumber)))
+                            notes.Add(new KeyValuePair<long, SevenBitNumber>(note.Time, note.NoteNumber), note);
+                    }
+                    else
+                    {
+                        if (!notes.ContainsKey(new KeyValuePair<long, SevenBitNumber>(note.Time, note.NoteNumber)))
+                            notes.Add(new KeyValuePair<long, SevenBitNumber>(note.Time, note.NoteNumber), note);
+                        else
+                        {
+                            var found = notes.First(n => (n.Value.Time == note.Time) && (n.Value.NoteNumber == note.NoteNumber));
+                            if (((note.Length < found.Value.Length) && (type == 2)) || //keep shortest
+                                ((note.Length > found.Value.Length) && (type == 3)))
+                            {
+                                notes.Remove(found.Key);
+                                notes.Add(new KeyValuePair<long, SevenBitNumber>(note.Time, note.NoteNumber), note);
+                            }
+                        }
+                    }
+                }
+                originalChunk.RemoveNotes(n => n != null);
+                originalChunk.AddObjects(notes.Values.ToArray<Note>());
+            });
+            return outputMidi;
         }
 
-        private void SongSpeed_Percent_OnValueChanged(object sender, int s)
+        /// <summary>
+        /// Compare two tracks and remove double notes (Helpful for guitar tracks)
+        /// </summary>
+        /// <param name="primary"></param>
+        /// <param name="secondary"></param>
+        private void RemoveSameNotes(TrackChunk primary, TrackChunk secondary)
         {
-            SongSpeed_Percent.Value = s.ToString();
+            Dictionary<long, int> instruments = new Dictionary<long, int>();
+            Dictionary<Note, int> primary_notes_collection = new Dictionary<Note, int>();
+            Dictionary<Note, int> secondary_notes_collection = new Dictionary<Note, int>();
+
+            //The primary track
+            //Get all instrument swiches
+            foreach (var ev in primary.GetTimedEvents())
+            {
+                if (ev.Event.EventType == MidiEventType.SequenceTrackName)
+                {
+                    Instrument instrument = null;
+                    if (Instrument.TryParse(((SequenceTrackNameEvent)ev.Event).Text, out instrument))
+                        instruments.Add(ev.Time, instrument.MidiProgramChangeCode);
+                }
+                
+                if (ev.Event.EventType == MidiEventType.ProgramChange && !instruments.ContainsKey(ev.Time))
+                    instruments.Add(ev.Time, ((ProgramChangeEvent)ev.Event).ProgramNumber);
+            }
+
+            //Get all notes and set the used instrument
+            int idx = 0;
+            int instr = -1;
+            foreach (var note in primary.GetNotes())
+            {
+                if (idx == 0 && instr == -1)
+                    instr = instruments.ElementAt(idx).Value;
+
+                if ((idx + 1) != instruments.Count())
+                {
+                    if (note.Time >= instruments.ElementAt(idx + 1).Key)
+                    {
+                        idx++;
+                        instr = instr = instruments.ElementAt(idx).Value;
+                    }
+                }
+                primary_notes_collection.Add(note, instr);
+            }
+
+            //The secondary track
+            instruments.Clear();
+            foreach (var ev in secondary.GetTimedEvents())
+            {
+                if (ev.Event.EventType == MidiEventType.SequenceTrackName)
+                {
+                    Instrument instrument = null;
+                    if (Instrument.TryParse(((SequenceTrackNameEvent)ev.Event).Text, out instrument))
+                        instruments.Add(ev.Time, instrument.MidiProgramChangeCode);
+                }
+
+                if (ev.Event.EventType == MidiEventType.ProgramChange && !instruments.ContainsKey(ev.Time))
+                    instruments.Add(ev.Time, ((ProgramChangeEvent)ev.Event).ProgramNumber);
+            }
+
+            idx = 0;
+            instr = -1;
+            foreach (var note in secondary.GetNotes())
+            {
+                if (idx == 0 && instr == -1)
+                    instr = instruments.ElementAt(idx).Value;
+
+                if ((idx + 1) != instruments.Count())
+                {
+                    if (note.Time >= instruments.ElementAt(idx + 1).Key)
+                    {
+                        idx++;
+                        instr = instr = instruments.ElementAt(idx).Value;
+                    }
+                }
+                secondary_notes_collection.Add(note, instr);
+            }
+
+            //select the origin and target by length (kann man sich auch sparen, sieht aber besser aus)
+            var originDict = primary_notes_collection.Count() < secondary_notes_collection.Count() ? primary_notes_collection : secondary_notes_collection;
+            var targetDict = primary_notes_collection.Count() < secondary_notes_collection.Count() ? secondary_notes_collection : primary_notes_collection;
+
+            //create a dictionary of the double notes
+            var dict3 = originDict.Where(entry =>
+                targetDict.Where(n => (n.Key.Time == entry.Key.Time) && (n.Key.NoteNumber == entry.Key.NoteNumber) && (n.Value == entry.Value)).Count() != 0
+                ).ToDictionary(x => x.Key, x => x.Value);
+
+            foreach (var data in dict3)
+                secondary.RemoveNotes(n => (n.Time == data.Key.Time) && (n.NoteNumber == data.Key.NoteNumber));
+
+            MessageBox.Show("Removed " + dict3.Count().ToString() + " Notes", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            primary_notes_collection.Clear();
+            secondary_notes_collection.Clear();
+            dict3.Clear();
+            instruments.Clear();
+        }
+
+        private void Arpeggiate(TrackChunk target, int spacing, int jitterTick, bool up=true)
+        {
+            var backup = target.Clone();
+            Dictionary<Note, long> note_collection = new Dictionary<Note, long>();
+
+            foreach (Note note in target.GetNotes())
+                note_collection.Add(note, note.Time);
+
+            var sortedDict = from entry in note_collection orderby entry.Value ascending select entry;
+            var dict3 = note_collection.Where(entry =>
+                            sortedDict.Where(n => (entry.Key.Time - jitterTick <= n.Key.Time && n.Key.Time <= entry.Key.Time + jitterTick)).Count() > 1
+                            ).ToDictionary(x => x.Key, x => x.Value);
+            note_collection = dict3;
+
+            for (int i = 0; i != note_collection.Count;)
+            {
+                //get the notes to arp
+                var f = note_collection.ElementAt(i);
+                var data = note_collection.Where(n=> (f.Key.Time - jitterTick <= n.Key.Time && n.Key.Time <= f.Key.Time + jitterTick));
+                //set the counter
+                i += data.Count();
+
+                //order by note number
+                if (up)
+                    data = from entry in data orderby entry.Key.NoteNumber ascending select entry;
+                else
+                    data = from entry in data orderby entry.Key.NoteNumber descending select entry;
+
+                //and do the arp
+                Note lastnote = null;
+                long arplen = 0;
+                foreach (var note in data)
+                {
+                    //Calc the spacing
+                    MusicalTimeSpan musicalTimeFromTicks = TimeConverter.ConvertTo<MusicalTimeSpan>(note.Key.Time, _midifile.GetTempoMap());
+                    long beatlen = (long)_midifile.GetTempoMap().GetTempoAtTime((MusicalTimeSpan)musicalTimeFromTicks).MicrosecondsPerQuarterNote*4;
+                    beatlen = beatlen / spacing; //arp spacing
+                    long ticksFromMetricLength = TimeConverter.ConvertFrom(new MetricTimeSpan(beatlen), _midifile.GetTempoMap());
+
+                    //not the last note change length
+                    if (!note.Key.Equals(data.Last().Key))
+                        note.Key.Length = ticksFromMetricLength;
+
+                    //First note, just set the length
+                    if (note.Key.NoteNumber == data.First().Key.NoteNumber)
+                    {
+                        lastnote = note.Key;
+                        target.RemoveNotes(n => (n.Time == note.Value) && (n.NoteNumber == note.Key.NoteNumber));
+                        target.AddObjects(new List<Note> { note.Key }.ToArray());
+                        continue;
+                    }
+
+                    //Get the total length of the Arp
+                    arplen += ticksFromMetricLength;
+                    //Check if we have the last note
+                    if (note.Key.Equals(data.Last().Key))
+                    {
+                        if (note.Key.Length - arplen <= 0)
+                        {
+                            var Result = MessageBox.Show("Arp exceeds chords length. Revert? ", "Warning!", MessageBoxButton.YesNo);
+                            if (Result == MessageBoxResult.Yes)
+                            {
+                                target.RemoveNotes();
+                                target.AddObjects(((TrackChunk)backup).GetNotes());
+                                return;
+                            }
+                            note.Key.Length -= ticksFromMetricLength;
+                        }
+                        else
+                            note.Key.Length -= arplen;
+                    }
+                    //Move the note by spacing
+                    note.Key.Time = lastnote.Time + ticksFromMetricLength;
+
+                    //Remove old note add new one
+                    target.RemoveNotes(n=> (n.Time == note.Value) && (n.NoteNumber == note.Key.NoteNumber));
+                    target.AddObjects(new List<Note> { note.Key }.ToArray());
+                    lastnote = note.Key;
+                }
+            }
         }
     }
 }

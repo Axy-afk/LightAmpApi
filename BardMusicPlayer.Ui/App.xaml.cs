@@ -12,9 +12,10 @@ using System.Diagnostics;
 using BardMusicPlayer.Siren;
 using BardMusicPlayer.Jamboree;
 using BardMusicPlayer.Script;
+using Microsoft.Owin.Hosting;
+using BardMusicPlayer.XIVMIDI;
 using System.Globalization;
 using System;
-using Microsoft.Owin.Hosting;
 
 namespace BardMusicPlayer.Ui
 {
@@ -23,6 +24,7 @@ namespace BardMusicPlayer.Ui
     /// </summary>
     public sealed partial class App : Application
     {
+        public static string TempPath { get; } = System.IO.Path.GetTempPath() + "LightAmp\\";
         string baseAddress = "http://localhost:9001/";
         IDisposable webApp;
         protected override void OnStartup(StartupEventArgs e)
@@ -58,6 +60,7 @@ namespace BardMusicPlayer.Ui
             BmpScript.Instance.Start();
 
             BmpSiren.Instance.Setup();
+            XIVMIDI.XIVMIDI.Instance.Start();
             //BmpJamboree.Instance.Start();
             ConfigureLanguage(System.Threading.Thread.CurrentThread.CurrentUICulture.ToString());
         }
@@ -65,6 +68,7 @@ namespace BardMusicPlayer.Ui
         protected override void OnExit(ExitEventArgs e)
         {
             webApp.Dispose();
+            XIVMIDI.XIVMIDI.Instance.Stop();
             //LogManager.Shutdown();
             BmpJamboree.Instance.Stop();
             if (BmpSiren.Instance.IsReadyForPlayback)
