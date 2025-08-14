@@ -292,6 +292,11 @@
     <Compile Include="Windows\BardExtSettingsWindow.xaml.cs">
       <DependentUpon>BardExtSettingsWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ApiSong.cs" />
+    <Compile Include="SongController.cs" />
+    <Compile Include="PlayListController.cs" />
+    <Compile Include="PlaybackController.cs" />
+    <Compile Include="Startup.cs" />
     <Compile Include="Windows\MacroEditWindow.xaml.cs">
       <DependentUpon>MacroEditWindow.xaml</DependentUpon>
     </Compile>
