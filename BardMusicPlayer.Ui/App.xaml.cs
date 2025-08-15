@@ -35,6 +35,7 @@ namespace BardMusicPlayer.Ui
 
             Globals.Globals.DataPath = @"data\";
 
+            System.IO.File.AppendAllText("debug.log", $"[{DateTime.Now}] pree\n");
             //init pigeon at first
             BmpPigeonhole.Initialize(Globals.Globals.DataPath + @"\Configuration.json");
 
@@ -54,8 +55,9 @@ namespace BardMusicPlayer.Ui
             //Start seer
             BmpSeer.Instance.Start();
 
-            DalamudBridge.DalamudBridge.Instance.Start();
 
+      
+            //DalamudBridge.DalamudBridge.Instance.Start();
             //Start the scripting
             BmpScript.Instance.Start();
 
