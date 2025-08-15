@@ -55,9 +55,8 @@ namespace BardMusicPlayer.Ui
             //Start seer
             BmpSeer.Instance.Start();
 
+            DalamudBridge.DalamudBridge.Instance.Start();
 
-      
-            //DalamudBridge.DalamudBridge.Instance.Start();
             //Start the scripting
             BmpScript.Instance.Start();
 
