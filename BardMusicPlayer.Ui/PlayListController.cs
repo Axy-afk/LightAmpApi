@@ -6,24 +6,26 @@ using BardMusicPlayer.Ui.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BardMusicPlayer.Ui
 {
-    public class PlayListController : ApiController
+    [Route("api/[controller]")]
+    [ApiController]
+    public class PlayListController : ControllerBase
     {
         [HttpGet]
         public IList<string> Get()
         {
             return BmpCoffer.Instance.GetPlaylistNames();
         }
-        [HttpGet]
+        [HttpGet("{id}")]
         public ApiSong[] Get(string id)
         {
             return BmpCoffer.Instance.GetPlaylist(id).Select(x => ApiSong.Create(x)).ToArray();
         }
-        [HttpPatch]
-        public IHttpActionResult Patch(string id)
+        [HttpPatch("{id}")]
+        public IActionResult Patch(string id)
         {
             Classic_MainView.Instance.Dispatcher.BeginInvoke(new Action(() => Classic_MainView.Instance.PlaylistCtl.SelectPlayList("..")));
             Classic_MainView.Instance.Dispatcher.BeginInvoke(new Action(() => Classic_MainView.Instance.PlaylistCtl.SelectPlayList(id)));
@@ -31,8 +33,8 @@ namespace BardMusicPlayer.Ui
         }
 
         [HttpPut]
-        [Route("playlist/shuffle/{id}")]
-        public IHttpActionResult Shuffle(string id)
+        [Route("shuffle/{id}")]
+        public IActionResult Shuffle(string id)
         {
             if (string.IsNullOrWhiteSpace(id))
                 return BadRequest("Playlist ID is required.");
@@ -61,8 +63,8 @@ namespace BardMusicPlayer.Ui
         }
 
         [HttpPost]
-        [Route("playlist/copy/{src}/{dest}")]
-        public IHttpActionResult Copy(string src, string dest)
+        [Route("copy/{src}/{dest}")]
+        public IActionResult Copy(string src, string dest)
         {
             if (string.IsNullOrWhiteSpace(src) || string.IsNullOrWhiteSpace(dest))
                 return BadRequest("Source and destination playlist IDs are required.");

@@ -3,15 +3,14 @@ using BardMusicPlayer.Transmogrify.Song;
 using BardMusicPlayer.Ui.Classic;
 using BardMusicPlayer.Ui.Controls;
 using BardMusicPlayer.Ui.Functions;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using System.Web.Http;
-using System.Web.Http.Results;
 
 namespace BardMusicPlayer.Ui
 {
-    public class SongController : ApiController
+    public class SongController : ControllerBase
     {
         [HttpGet]
         public ApiSong Get()
@@ -24,7 +23,7 @@ namespace BardMusicPlayer.Ui
             Classic_MainView.Instance.Dispatcher.BeginInvoke(new Action(() => Classic_MainView.Instance.PlaylistCtl.SelectSongById(id)));
         }
         [HttpPut]
-        public IHttpActionResult Put([FromUri] string id)
+        public IActionResult Put([FromQuery] string id)
         {
           lock (Classic_MainView.Instance) {
             string decodedId = WebUtility.UrlDecode(id);
@@ -44,7 +43,7 @@ namespace BardMusicPlayer.Ui
         }
         [HttpPut]
         [Route("song/load")]
-        public IHttpActionResult LoadSong([FromUri] string id)
+        public IActionResult LoadSong([FromQuery] string id)
         {
             if (string.IsNullOrWhiteSpace(id))
                 return BadRequest("Filename is required.");
@@ -54,7 +53,7 @@ namespace BardMusicPlayer.Ui
             bool result = PlaybackFunctions.LoadSong(decodedFilename);
 
             if (!result)
-                return InternalServerError(new Exception("Failed to load song."));
+                return StatusCode(500, new Exception("Failed to load song."));
 
             return Ok($"Song '{decodedFilename}' loaded successfully.");
         }
@@ -62,7 +61,7 @@ namespace BardMusicPlayer.Ui
         [HttpPut]
     
         [Route("song/insert/{playlist}/{idx}")]
-        public async Task<IHttpActionResult> InsertSong(string playlist, int idx, [FromUri] string filename)
+        public async Task<IActionResult> InsertSong(string playlist, int idx, [FromQuery] string filename)
         {
             if (string.IsNullOrWhiteSpace(filename))
                 return BadRequest("Filename is required.");
@@ -76,7 +75,7 @@ namespace BardMusicPlayer.Ui
             }
             catch (Exception ex)
             {
-                return InternalServerError(new Exception($"Failed to open file '{decodedFilename}': {ex.Message}"));
+                return StatusCode(500, new Exception($"Failed to open file '{decodedFilename}': {ex.Message}"));
             }
 
             var targetPlaylist = BmpCoffer.Instance.GetPlaylist(playlist);
@@ -93,7 +92,7 @@ namespace BardMusicPlayer.Ui
             }
             catch (Exception ex)
             {
-                return InternalServerError(new Exception($"Failed to insert song at index {idx}: {ex.Message}"));
+                return StatusCode(500, new Exception($"Failed to insert song at index {idx}: {ex.Message}"));
             }
 
             return Ok($"Song inserted at index {idx} into playlist '{playlist}'.");

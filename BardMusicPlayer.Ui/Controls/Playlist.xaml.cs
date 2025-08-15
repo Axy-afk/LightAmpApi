@@ -16,6 +16,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using UI.Resources;
+using LiteDB;
 
 namespace BardMusicPlayer.Ui.Controls
 {
@@ -151,7 +152,7 @@ namespace BardMusicPlayer.Ui.Controls
             id = null;
             if (currentPlaylist == null)
                 return;
-            var idx = currectSong == null ? -1 : currentPlaylist.IndexOf(currectSong);
+            var idx = currectSong == null ? -1 : PlaylistContainer.SelectedIndex;
             if (idx ==  -1) {
                 if (PlaylistFunctions.AddFilesToPlaylist(currentPlaylist, filename, out id))
                     refreshPlaylistSongsAndTimes();
@@ -303,7 +304,7 @@ namespace BardMusicPlayer.Ui.Controls
                     return;
                 currentPlaylist = BmpCoffer.Instance.GetPlaylist(name);
                 showingPlaylists = false;
-                RefreshPlaylistSongsAndTimes();
+                refreshPlaylistSongsAndTimes();
                 return;
             }
             else

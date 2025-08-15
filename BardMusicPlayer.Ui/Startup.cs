@@ -6,10 +6,13 @@ using Owin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Formatting;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Controllers;
+using System.Net.Http.Formatting;
+using Microsoft.Owin.Hosting;
+
 namespace BardMusicPlayer.Ui
 {
     public class Startup
